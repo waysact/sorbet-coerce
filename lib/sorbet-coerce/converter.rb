@@ -108,6 +108,26 @@ class TypeCoerce::Converter
       else
         _convert_simple(value, type, raise_coercion_error, coerce_empty_to_nil)
       end
+    elsif type.is_a?(T::Types::FixedHash)
+      unless value.respond_to?(:map)
+        raise TypeCoerce::ShapeError.new(value, type)
+      end
+
+      begin
+        type.types.map do |key, sub_type|
+          sub_value = T.let(
+            _convert(value[key], sub_type, raise_coercion_error, coerce_empty_to_nil),
+            sub_type
+          )
+          [key, sub_value]
+        end.to_h
+      rescue TypeError
+        if raise_coercion_error
+          raise TypeCoerce::CoercionError.new(value, type)
+        else
+          value
+        end
+      end
     else
       if raise_coercion_error
         raise TypeCoerce::CoercionError.new(value, type)

@@ -84,6 +84,10 @@ describe TypeCoerce do
       const :arr, [Integer, String, Integer]
     end
 
+    class WithShape < T::Struct
+      const :shape, T.nilable({ foo: String })
+    end
+
     class CustomString < String
     end
 
@@ -267,6 +271,19 @@ describe TypeCoerce do
     end
   end
 
+  context 'when dealing with shapes' do
+    it 'coerces correctly' do
+      coerced = TypeCoerce[WithShape].new.from({shape: {foo: 'bar'}})
+      expect(coerced.shape[:foo]).to eql 'bar'
+    end
+
+    it 'raises with missing key' do
+      expect {
+        TypeCoerce[WithShape].new.from({shape: {xyz: 'bar'}})
+      }.to raise_error(TypeCoerce::CoercionError)
+    end
+  end
+  
   context 'when dealing with hashes' do
     it 'coreces correctly' do
       expect(TypeCoerce[T::Hash[T.untyped, T.untyped]].new.from(nil)).to eql({})
