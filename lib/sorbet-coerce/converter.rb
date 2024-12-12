@@ -100,7 +100,7 @@ class TypeCoerce::Converter
     elsif type.is_a?(Class) || type.is_a?(Module)
       return coerce_nil(value, type, coerce_empty_to_nil) if value.is_a?(type)
 
-      if type < T::Struct
+      if type < T::InexactStruct
         args = _build_args(value, type, raise_coercion_error, coerce_empty_to_nil)
         type.new(args)
       elsif type < T::Enum

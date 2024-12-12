@@ -10,6 +10,12 @@ describe TypeCoerce do
       const :skill_ids, T::Array[Integer]
     end
 
+    class ParamInfoInexact < T::InexactStruct
+      const :name, String
+      const :lvl, T.nilable(Integer)
+      const :skill_ids, T::Array[Integer]
+    end
+
     class ParamInfo2 < T::Struct
       const :a, Integer
       const :b, Integer
@@ -264,6 +270,18 @@ describe TypeCoerce do
       expect {
         TypeCoerce[ParamInfo2].new.from({a: nil, b: nil})
       }.to raise_error(TypeError)
+    end
+  end
+
+  context 'when dealing with InexactStructs' do
+    it 'coerces correctly from hash with symbol keys' do
+      info = TypeCoerce[ParamInfoInexact].new.from({name: 'a', skill_ids: []})
+      expect(info.name).to eql 'a'
+    end
+
+    it 'coerces correctly from hash with string keys' do
+      info = TypeCoerce[ParamInfoInexact].new.from({'name' => 'a', 'skill_ids' => []})
+      expect(info.name).to eql 'a'
     end
   end
 
